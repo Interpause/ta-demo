@@ -32,7 +32,18 @@ function ChatLog() {
   }, [msgs.length])
 
   return (
-    <div ref={logRef} className='bg-base-200 overflow-y-scroll grow'>
+    <div ref={logRef} className='relative bg-base-200 overflow-y-scroll grow'>
+      <div className='absolute inset-0 flex text-wrap text-gray-600 pointer-events-none'>
+        <div className='m-auto justify-center align-middle p-4'>
+          <h4 className='text-lg'>Disclaimer</h4>
+          <ul className='list-disc pl-4'>
+            <li>
+              Experimental prototype rushed by students, model will hallucinate
+            </li>
+            <li>Prototype will throttle on many concurrent users</li>
+          </ul>
+        </div>
+      </div>
       {msgs.map((m, i) => (
         <div
           className={`chat ${m.role === 'user' ? 'chat-end' : 'chat-start'}`}
@@ -51,23 +62,32 @@ function ChatLog() {
 
 function ChatEntry() {
   const [text, setText] = useState('')
-  const { addMsg } = useChat()
+  const { addMsg, error, isSending } = useChat()
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (text === '') return
     addMsg({ role: 'user', text })
     setText('')
   }
 
+  const updateText = (text: string) => {
+    setText(text)
+    const textElm = inputRef.current
+    if (!textElm) return
+    textElm.style.height = `${textElm.scrollHeight}px`
+  }
+
   return (
     <form onSubmit={handleSubmit} className='form-control'>
-      <input
-        type='text'
-        placeholder='Type a message'
-        className='input input-ghost'
+      <textarea
+        ref={inputRef}
+        placeholder={isSending ? 'Processing...' : error ?? 'Type a message...'}
+        className='textarea textarea-ghost outline-none break-words overflow-hidden'
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => updateText(e.target.value)}
+        disabled={isSending}
+        rows={1}
       />
       <button type='submit' className='btn btn-ghost'>
         Send

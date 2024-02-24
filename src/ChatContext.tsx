@@ -9,6 +9,8 @@ interface ChatState {
   msgs: Msg[]
   addMsg: (msg: Msg) => void
   resetMsgs: () => void
+  isSending: boolean
+  error?: string
 }
 
 const GREETING: Msg = {
@@ -22,10 +24,17 @@ const Context = createContext<ChatState>({} as ChatState)
 export const useChat = () => useContext(Context)
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [msgs, setMsgs] = useState<Msg[]>([GREETING])
+  const [isSending, setSending] = useState(false)
+  const [error, setError] = useState<string>()
 
   const addMsg = (msg: Msg) => {
-    const newMsgs = [...msgs, msg]
-    setMsgs(newMsgs)
+    let newMsgs = [...msgs]
+    if (msg.text && msg.text !== '') {
+      newMsgs = [...msgs, msg]
+      setMsgs(newMsgs)
+    }
+    setError(undefined)
+    setSending(true)
     fetch('/api/bot/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -33,19 +42,20 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }).then(async (res) => {
       try {
         const raw = await res.text()
-        console.info(raw)
         const data = JSON.parse(raw)
-        console.info(data)
         if (data.text) setMsgs([...newMsgs, { role: 'model', text: data.text }])
+        else setError(`API Error: ${JSON.stringify(data)}`)
       } catch (err) {
         console.error(err)
+        setError(`API Error: ${JSON.stringify(err)}`)
       }
+      setSending(false)
     })
   }
   const resetMsgs = () => setMsgs([GREETING])
 
   return (
-    <Context.Provider value={{ msgs, addMsg, resetMsgs }}>
+    <Context.Provider value={{ msgs, addMsg, resetMsgs, error, isSending }}>
       {children}
     </Context.Provider>
   )
