@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import Markdown from 'react-markdown'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -60,7 +61,7 @@ function ChatLog() {
           <div
             className={`chat-bubble ${m.role === 'user' ? 'bg-accent-content' : ''}`}
           >
-            {m.text}
+            <Markdown className='reactMarkDown'>{m.text}</Markdown>
           </div>
         </div>
       ))}

@@ -44,8 +44,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       try {
         const raw = await res.text()
         const data = JSON.parse(raw)
-        if (data.text) setMsgs([...newMsgs, { role: 'model', text: data.text }])
-        else setError(`API Error: ${JSON.stringify(data)}`)
+        if (data.text) {
+          setMsgs([...newMsgs, { role: 'model', text: data.text }])
+          console.log(data.text)
+        } else setError(`API Error: ${JSON.stringify(data)}`)
       } catch (err) {
         console.error(err)
         setError(`API Error: ${JSON.stringify(err)}`)
