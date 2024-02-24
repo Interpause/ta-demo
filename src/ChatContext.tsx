@@ -35,11 +35,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }
     setError(undefined)
     setSending(true)
-    fetch('/api/bot/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat: newMsgs, autoSearch: true }),
-    }).then(async (res) => {
+    ;(async () => {
+      const res = await fetch('/api/bot/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat: newMsgs, autoSearch: true }),
+      })
       try {
         const raw = await res.text()
         const data = JSON.parse(raw)
@@ -50,7 +51,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         setError(`API Error: ${JSON.stringify(err)}`)
       }
       setSending(false)
-    })
+    })()
   }
   const resetMsgs = () => setMsgs([GREETING])
 

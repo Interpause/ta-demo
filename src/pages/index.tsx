@@ -6,7 +6,15 @@ import {
   IconTrashCan,
 } from '@/icons'
 import { Inter } from 'next/font/google'
-import { ComponentProps, forwardRef, useEffect, useRef, useState } from 'react'
+import {
+  ChangeEventHandler,
+  ComponentProps,
+  KeyboardEventHandler,
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -67,16 +75,25 @@ function ChatEntry() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    addMsg({ role: 'user', text })
     setText('')
+    addMsg({ role: 'user', text })
   }
 
-  const updateText = (text: string) => {
-    setText(text)
+  const handleEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
+    if (e.key == 'Enter') {
+      setText('')
+      addMsg({ role: 'user', text })
+    }
+  }
+
+  const updateText: ChangeEventHandler<HTMLTextAreaElement> = (e) =>
+    setText(e.target.value)
+
+  useEffect(() => {
     const textElm = inputRef.current
     if (!textElm) return
     textElm.style.height = `${textElm.scrollHeight}px`
-  }
+  }, [text])
 
   return (
     <form onSubmit={handleSubmit} className='form-control'>
@@ -85,7 +102,8 @@ function ChatEntry() {
         placeholder={isSending ? 'Processing...' : error ?? 'Type a message...'}
         className='textarea textarea-ghost outline-none break-words overflow-hidden'
         value={text}
-        onChange={(e) => updateText(e.target.value)}
+        onChange={updateText}
+        onKeyDown={handleEnter}
         disabled={isSending}
         rows={1}
       />
@@ -248,7 +266,9 @@ function Header() {
 
 export default function Home() {
   return (
-    <main className={`fixed inset-0 flex flex-col h-screen ${inter.className}`}>
+    <main
+      className={`fixed inset-0 flex flex-col h-[calc(100dvh)] ${inter.className}`}
+    >
       <Header />
       <ChatLog />
       <ChatEntry />
