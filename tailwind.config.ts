@@ -16,5 +16,16 @@ const config: Config = {
     },
   },
   plugins: [require('daisyui')],
+  daisyui: {
+    themes: [
+      {
+        mytheme: {
+          ...require('daisyui/src/theming/themes')['dark'],
+          primary: '#ec6a32',
+          accent: '#ec6a32',
+        },
+      },
+    ],
+  },
 }
 export default config

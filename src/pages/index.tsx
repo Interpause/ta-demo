@@ -22,7 +22,7 @@ const inter = Inter({ subsets: ['latin'] })
 function ActBtn({ className, children, ...props }: ComponentProps<'button'>) {
   return (
     <button
-      className={`btn btn-square btn-outline join-item btn-sm ${className}`}
+      className={`btn btn-square btn-outline join-item btn-sm text-white ${className}`}
       {...props}
     >
       {children}
@@ -59,7 +59,7 @@ function ChatLog() {
           key={i}
         >
           <div
-            className={`chat-bubble ${m.role === 'user' ? 'bg-accent-content' : ''}`}
+            className={`chat-bubble text-white ${m.role === 'user' ? 'bg-accent' : ''}`}
           >
             <Markdown className='reactMarkDown'>{m.text}</Markdown>
           </div>
@@ -251,7 +251,7 @@ function RightActionBar() {
 
 function Header() {
   return (
-    <div className='navbar z-10 min-h-12 bg-accent-content'>
+    <div className='navbar z-10 min-h-12 bg-accent'>
       <div className='navbar-start'>
         <LeftActionBar />
       </div>
