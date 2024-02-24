@@ -9,8 +9,12 @@ import { Inter } from 'next/font/google'
 import {
   ChangeEventHandler,
   ComponentProps,
+  Dispatch,
   KeyboardEventHandler,
+  SetStateAction,
+  createContext,
   forwardRef,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -18,6 +22,11 @@ import {
 import Markdown from 'react-markdown'
 
 const inter = Inter({ subsets: ['latin'] })
+
+const DrawerContext = createContext([false, (value) => {}] as [
+  boolean,
+  Dispatch<SetStateAction<boolean>>,
+])
 
 function ActBtn({ className, children, ...props }: ComponentProps<'button'>) {
   return (
@@ -116,12 +125,13 @@ function ChatEntry() {
 }
 
 function LeftActionBar() {
+  const [open, setOpen] = useContext(DrawerContext)
   return (
     <div className='join'>
       <ActBtn>
         <IconTrashCan />
       </ActBtn>
-      <ActBtn>
+      <ActBtn onClick={() => setOpen(true)}>
         <IconClipboardList />
       </ActBtn>
     </div>
@@ -266,13 +276,38 @@ function Header() {
 }
 
 export default function Home() {
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const { chunks } = useChat()
   return (
-    <main
-      className={`fixed inset-0 flex flex-col h-[calc(100dvh)] ${inter.className}`}
-    >
-      <Header />
-      <ChatLog />
-      <ChatEntry />
-    </main>
+    <DrawerContext.Provider value={[drawerOpen, setDrawerOpen]}>
+      <div className='drawer'>
+        <input type='checkbox' className='drawer-toggle' checked={drawerOpen} />
+        <main
+          className={`drawer-content fixed inset-0 flex flex-col h-[calc(100dvh)] ${inter.className}`}
+        >
+          <Header />
+          <ChatLog />
+          <ChatEntry />
+        </main>
+        <div className='drawer-side'>
+          <label
+            aria-label='close sidebar'
+            className='drawer-overlay'
+            onClick={() => setDrawerOpen(false)}
+          ></label>
+          <ul className='menu p-4 w-80 min-h-full bg-base-200 text-base-content'>
+            <h3 className='text-lg'>Referenced Snippets</h3>
+            {chunks.map((s, i) => (
+              <li
+                key={i}
+                className={`border ${i % 2 == 0 ? 'bg-base-400' : 'bg-base-100'}`}
+              >
+                {s}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </DrawerContext.Provider>
   )
 }
