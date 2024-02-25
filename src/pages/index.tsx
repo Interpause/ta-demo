@@ -20,6 +20,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import toast, { Toaster } from 'react-hot-toast'
 import Markdown from 'react-markdown'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -40,15 +41,48 @@ function ActBtn({ className, children, ...props }: ComponentProps<'button'>) {
   )
 }
 
+interface TypingProps {
+  content: string
+  delay: number
+}
+
+function useTyping({ content, delay }: TypingProps) {
+  const [text, setText] = useState('')
+  const [index, setIndex] = useState(0)
+
+  useEffect(() => {
+    const arr = content.split(' ')
+    if (index >= arr.length) return
+    const timeout = setTimeout(() => {
+      setText((prev) => prev + ' ' + arr[index])
+      setIndex((prev) => prev + 1)
+    }, delay)
+    return () => clearTimeout(timeout)
+  }, [index, delay, text])
+
+  useEffect(() => {
+    setText('')
+    setIndex(0)
+  }, [content])
+
+  return text
+}
+
 function ChatLog() {
-  const { msgs } = useChat()
+  const { msgs, isSending } = useChat()
   const logRef = useRef<HTMLDivElement>(null)
+
+  const lastMsg = msgs[msgs.length - 1]
+  const msgsShown =
+    lastMsg.role === 'model' ? msgs.slice(0, msgs.length - 1) : msgs
+
+  const typed = useTyping({ content: lastMsg.text, delay: 50 })
 
   useEffect(() => {
     const divElm = logRef.current
     if (!divElm) return
     divElm.scrollTop = divElm.scrollHeight
-  }, [msgs.length])
+  }, [msgs.length, typed])
 
   return (
     <div
@@ -66,7 +100,7 @@ function ChatLog() {
           </ul>
         </div>
       </div>
-      {msgs.map((m, i) => (
+      {msgsShown.map((m, i) => (
         <div
           className={`chat ${m.role === 'user' ? 'chat-end' : 'chat-start'}`}
           key={i}
@@ -78,6 +112,24 @@ function ChatLog() {
           </div>
         </div>
       ))}
+      {!isSending && lastMsg.role === 'model' ? (
+        <div className='chat chat-start'>
+          <div className='chat-bubble text-white'>
+            <Markdown className='reactMarkDown'>{typed}</Markdown>
+          </div>
+        </div>
+      ) : (
+        ''
+      )}
+      {isSending ? (
+        <div className='chat chat-start'>
+          <div className='chat-bubble text-white'>
+            <span className='loading loading-dots loading-md'></span>
+          </div>
+        </div>
+      ) : (
+        ''
+      )}
     </div>
   )
 }
@@ -156,10 +208,12 @@ const UploadModal = forwardRef<HTMLDialogElement, ComponentProps<'dialog'>>(
 
     const onUpload = (text: string) => {
       if (text === '') return
-      // TODO: popup saying uploading, followed by pop up that says done
-      // add like the first few words ellipses in the pop up so they know what
-      // was uploaded
-      uploadText(text)
+      setText('')
+      toast.promise(uploadText(text), {
+        loading: 'Uploading...',
+        success: `"${text.slice(0, 20)}${text.length > 20 ? '...' : ''}" Uploaded!`,
+        error: (err) => `This just happened: ${err.toString()}`,
+      })
     }
 
     return (
@@ -235,6 +289,7 @@ const UploadModal = forwardRef<HTMLDialogElement, ComponentProps<'dialog'>>(
                   className='textarea textarea-bordered resize-y'
                   placeholder='Paste text here...'
                   rows={10}
+                  value={text}
                   onChange={(e) => setText(e.target.value)}
                 />
                 <button
@@ -370,6 +425,16 @@ export default function Home() {
           </ul>
         </div>
       </div>
+      <Toaster
+        toastOptions={{
+          position: 'bottom-center',
+          style: {
+            background: '#333',
+            color: '#fff',
+            zIndex: 9999999,
+          },
+        }}
+      />
     </DrawerContext.Provider>
   )
 }

@@ -75,7 +75,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         setChunks(data.chunks)
       } catch (err) {
         console.error(err)
-        setError(`API Error: ${JSON.stringify(err)}`)
+        setError(`API Error: ${(err as any).toString()}`)
       } finally {
         setSending(false)
       }

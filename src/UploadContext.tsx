@@ -6,7 +6,7 @@ export const UUID_KEY = 'dataset_uuid'
 
 interface UploadState {
   uuid: string
-  uploadText: (text: string) => void
+  uploadText: (text: string) => Promise<void>
   allocateUUID: () => void
   resetUUID: () => void
 }
@@ -38,6 +38,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
         console.log(data)
       } catch (e) {
         console.error(e)
+        return Promise.reject(e)
       }
     })()
   }
