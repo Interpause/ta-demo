@@ -50,7 +50,10 @@ function ChatLog() {
   }, [msgs.length])
 
   return (
-    <div ref={logRef} className='relative bg-base-200 overflow-y-scroll grow'>
+    <div
+      ref={logRef}
+      className='relative bg-base-200 overflow-y-scroll overflow-x-hidden grow'
+    >
       <div className='absolute inset-0 flex text-wrap text-gray-600 pointer-events-none'>
         <div className='m-auto justify-center align-middle p-4'>
           <h4 className='text-lg'>Disclaimer</h4>
@@ -283,7 +286,7 @@ export default function Home() {
       <div className='drawer'>
         <input type='checkbox' className='drawer-toggle' checked={drawerOpen} />
         <main
-          className={`drawer-content fixed inset-0 flex flex-col h-[calc(100dvh)] ${inter.className}`}
+          className={`drawer-content fixed inset-0 flex flex-col h-[calc(100dvh)] w-[calc(100dvw)] overflow-hidden ${inter.className}`}
         >
           <Header />
           <ChatLog />
