@@ -35,33 +35,45 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string>()
 
   const addMsg = (msg: Msg) => {
+    setSending(true)
+    setError(undefined)
+
     let newMsgs = [...msgs]
     if (msg.text && msg.text !== '') {
       newMsgs = [...msgs, msg]
       setMsgs(newMsgs)
     }
-    setError(undefined)
-    setSending(true)
+
+    // TODO: Server side support model continuation.
+    if (newMsgs[newMsgs.length - 1].role === 'model') return
+    if (isSending) return
+
+    // POST request.
+    const req = fetch('/api/bot/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat: newMsgs, autoSearch: true }),
+    })
     ;(async () => {
-      const res = await fetch('/api/bot/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat: newMsgs, autoSearch: true }),
-      })
+      // NOTE: make sure the try wraps everything...
       try {
+        const res = await req
         const raw = await res.text()
         const data = JSON.parse(raw)
+
         if (data.text) {
           setMsgs([...newMsgs, { role: 'model', text: data.text }])
           console.log(data.text)
         } else setError(`API Error: ${JSON.stringify(data)}`)
+
         console.log(data.chunks)
         setChunks(data.chunks)
       } catch (err) {
         console.error(err)
         setError(`API Error: ${JSON.stringify(err)}`)
+      } finally {
+        setSending(false)
       }
-      setSending(false)
     })()
   }
   const resetMsgs = () => setMsgs([GREETING])
