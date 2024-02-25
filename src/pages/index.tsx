@@ -108,6 +108,8 @@ function ChatEntry() {
   useEffect(() => {
     const textElm = inputRef.current
     if (!textElm) return
+    textElm.style.height = '0px'
+    getComputedStyle(textElm) // From testing not actually necessary but whatever.
     textElm.style.height = `${textElm.scrollHeight}px`
   }, [text])
 
