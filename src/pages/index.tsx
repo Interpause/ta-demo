@@ -212,8 +212,43 @@ const UploadModal = forwardRef<HTMLDialogElement, ComponentProps<'dialog'>>(
       toast.promise(uploadText(text), {
         loading: 'Uploading...',
         success: `"${text.slice(0, 20)}${text.length > 20 ? '...' : ''}" Uploaded!`,
-        error: (err) => `This just happened: ${err.toString()}`,
+        error: (err) => `Error: ${err.toString()}`,
       })
+    }
+
+    const uploadPdf = (files: FileList) => {
+      const file = files[0]
+      const formdata = new FormData()
+      formdata.append('file', file)
+      const req = fetch('/api/pdf/documents', {
+        method: 'POST',
+        body: formdata,
+      })
+      toast.promise(
+        (async () => {
+          try {
+            const res = await req
+            const data = await res.json()
+            console.log(data)
+            return data.data
+          } catch (err) {
+            console.error(err)
+            return Promise.reject('Failed to process PDF')
+          }
+        })(),
+        {
+          loading: 'Processing PDF...',
+          success: (data) => {
+            toast.promise(uploadText(data), {
+              loading: 'Uploading...',
+              success: `"${data.slice(0, 20)}${data.length > 20 ? '...' : ''}" Uploaded!`,
+              error: (err) => `Error: ${err.toString()}`,
+            })
+            return 'PDF Processed!'
+          },
+          error: (err) => `Error: ${err.toString()}`,
+        },
+      )
     }
 
     return (
@@ -248,7 +283,14 @@ const UploadModal = forwardRef<HTMLDialogElement, ComponentProps<'dialog'>>(
               checked={selected === 'pdf'}
             />
             <div role='tabpanel' className='tab-content'>
-              <div className='w-full'></div>
+              <div className='flex flex-row justify-center'>
+                <input
+                  type='file'
+                  accept='.pdf'
+                  className='file-input file-input-bordered w-full max-w-xs'
+                  onChange={(e) => e.target.files && uploadPdf(e.target.files)}
+                />
+              </div>
             </div>
             <input
               type='radio'

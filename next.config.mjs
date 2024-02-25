@@ -11,6 +11,10 @@ const nextConfig = {
         source: '/api/rag/:path*',
         destination: 'https://vta-rag.interpause.dev/api/v1/:path*',
       },
+      {
+        source: '/api/pdf/:path*',
+        destination: 'https://vta-doc.interpause.dev/:path*',
+      },
     ]
   },
   async headers() {
