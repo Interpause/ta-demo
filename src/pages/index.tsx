@@ -88,12 +88,15 @@ function ChatEntry() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSending) return
     setText('')
     addMsg({ role: 'user', text })
   }
 
   const handleEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
     if (e.key == 'Enter') {
+      e.preventDefault()
+      if (isSending) return
       setText('')
       addMsg({ role: 'user', text })
     }
@@ -117,11 +120,10 @@ function ChatEntry() {
         value={text}
         onChange={updateText}
         onKeyDown={handleEnter}
-        disabled={isSending}
         rows={1}
       />
-      <button type='submit' className='btn btn-ghost'>
-        Send
+      <button type='submit' className='btn btn-ghost' disabled={isSending}>
+        {isSending ? 'Sending...' : 'Send'}
       </button>
     </form>
   )

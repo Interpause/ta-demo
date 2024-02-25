@@ -45,8 +45,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }
 
     // TODO: Server side support model continuation.
-    if (newMsgs[newMsgs.length - 1].role === 'model') return
-    if (isSending) return
+    if (newMsgs[newMsgs.length - 1].role === 'model') return setSending(false)
+    if (isSending) return setSending(false)
 
     // POST request.
     const req = fetch('/api/bot/generate', {
