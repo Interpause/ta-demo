@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react'
+import { useUpload } from './UploadContext'
 
 const GREETING: Msg = {
   role: 'model',
@@ -33,6 +34,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [chunks, setChunks] = useState<string[]>([])
   const [isSending, setSending] = useState(false)
   const [error, setError] = useState<string>()
+  const { uuid } = useUpload()
 
   const addMsg = (msg: Msg) => {
     setSending(true)
@@ -52,7 +54,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const req = fetch('/api/bot/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat: newMsgs, autoSearch: true }),
+      body: JSON.stringify({
+        chat: newMsgs,
+        autoSearch: true,
+        datasetId: uuid,
+      }),
     })
     ;(async () => {
       // NOTE: make sure the try wraps everything...

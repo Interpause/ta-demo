@@ -1,5 +1,5 @@
 import { useChat } from '@/ChatContext'
-import { useUpload } from '@/UploadContext'
+import { SHARED_UUID, useUpload } from '@/UploadContext'
 import {
   IconArrowRotateRight,
   IconClipboardList,
@@ -32,7 +32,7 @@ const DrawerContext = createContext([false, (value) => {}] as [
 function ActBtn({ className, children, ...props }: ComponentProps<'button'>) {
   return (
     <button
-      className={`btn btn-square btn-outline join-item btn-sm text-white ${className}`}
+      className={`btn btn-sm btn-square btn-outline join-item text-xl text-white ${className}`}
       {...props}
     >
       {children}
@@ -151,7 +151,7 @@ const UploadModal = forwardRef<HTMLDialogElement, ComponentProps<'dialog'>>(
     const [selected, setSelected] = useState<
       'pdf' | 'url' | 'wikipedia' | 'text'
     >('pdf')
-    const { uuid, uploadText } = useUpload()
+    const { uuid, uploadText, allocateUUID } = useUpload()
     const [text, setText] = useState('')
 
     const onUpload = (text: string) => {
@@ -166,9 +166,20 @@ const UploadModal = forwardRef<HTMLDialogElement, ComponentProps<'dialog'>>(
       <dialog {...props} ref={ref} className='modal'>
         <div className='modal-box'>
           <h3 className='font-bold text-lg text-center'>Upload Document</h3>
-          <p className='text-xs text-center text-gray-400'>
-            Dataset Id: {uuid}
-          </p>
+          <div className='flex justify-center'>
+            {uuid === SHARED_UUID ? (
+              <button
+                className='btn btn-xs btn-outline btn-primary text-white'
+                onClick={() => allocateUUID()}
+              >
+                Assign Personal DB
+              </button>
+            ) : (
+              <span className='text-xs text-center text-gray-400'>
+                Personal Id: {uuid}
+              </span>
+            )}
+          </div>
           <div
             role='tablist'
             className='tabs tabs-bordered justify-center grid-cols-4'
@@ -249,6 +260,7 @@ function RightActionBar() {
   const uploadModalRef = useRef<HTMLDialogElement>(null)
   const resetModalRef = useRef<HTMLDialogElement>(null)
   const { resetMsgs } = useChat()
+  const { resetUUID } = useUpload()
 
   const showUploadModal = () => uploadModalRef.current?.showModal()
   const showResetModal = () => resetModalRef.current?.showModal()
@@ -269,6 +281,16 @@ function RightActionBar() {
           <h3 className='font-bold text-lg text-center'>Reset Chat</h3>
           <p>Are you sure you want to reset the chat?</p>
           <div className='modal-action'>
+            <button
+              onClick={() => {
+                resetUUID()
+                resetModalRef.current?.close()
+              }}
+              className='btn btn-error'
+            >
+              Revert to Shared DB
+            </button>
+            <div className='flex-grow'></div>
             <button
               onClick={() => {
                 resetMsgs()

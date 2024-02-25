@@ -1,12 +1,14 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
-const SHARED_UUID = '00000000-0000-0000-0000-000000000000'
+export const SHARED_UUID = '00000000-0000-0000-0000-000000000000'
+export const UUID_KEY = 'dataset_uuid'
 
 interface UploadState {
   uuid: string
   uploadText: (text: string) => void
-  // allocateUUID: () => void
+  allocateUUID: () => void
+  resetUUID: () => void
 }
 
 const Context = createContext<UploadState>({} as UploadState)
@@ -14,6 +16,11 @@ const Context = createContext<UploadState>({} as UploadState)
 export const useUpload = () => useContext(Context)
 export function UploadProvider({ children }: { children: React.ReactNode }) {
   const [uuid, setUUID] = useState<string>(SHARED_UUID)
+
+  useEffect(() => {
+    const saved = localStorage.getItem(UUID_KEY)
+    if (saved) setUUID(saved)
+  }, [])
 
   const uploadText = (text: string) => {
     // NOTE: to prevent stress, fastapi does a 307 redirect if the path is different
@@ -35,7 +42,20 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
     })()
   }
 
+  const allocateUUID = () => {
+    const newUUID = uuidv4()
+    setUUID(newUUID)
+    localStorage.setItem(UUID_KEY, newUUID)
+  }
+
+  const resetUUID = () => {
+    setUUID(SHARED_UUID)
+    localStorage.removeItem(UUID_KEY)
+  }
+
   return (
-    <Context.Provider value={{ uuid, uploadText }}>{children}</Context.Provider>
+    <Context.Provider value={{ uuid, uploadText, allocateUUID, resetUUID }}>
+      {children}
+    </Context.Provider>
   )
 }
