@@ -7,6 +7,10 @@ const nextConfig = {
         source: '/api/bot/:path*',
         destination: 'https://vta-bot.interpause.dev/api/v1/:path*',
       },
+      {
+        source: '/api/rag/:path*',
+        destination: 'https://vta-rag.interpause.dev/api/v1/:path*',
+      },
     ]
   },
   async headers() {

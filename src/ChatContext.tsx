@@ -1,5 +1,15 @@
 import { createContext, useContext, useState } from 'react'
 
+const GREETING: Msg = {
+  role: 'model',
+  text: 'Hello, I am VirtuTA, your virtual teacher assistant. What are we learning today?',
+}
+
+const INSTRUCTION: Msg = {
+  role: 'model',
+  text: 'Hello, I am VirtuTA, your virtual teacher assistant. Press the Add File icon on the top right to upload documents or webpages. Press the Clipboard icon on the top left to see the current knowledge snippets. Ask me anything!',
+}
+
 interface Msg {
   role: 'user' | 'model'
   text: string
@@ -12,16 +22,6 @@ interface ChatState {
   resetMsgs: () => void
   isSending: boolean
   error?: string
-}
-
-const GREETING: Msg = {
-  role: 'model',
-  text: 'Hello, I am VirtuTA, your virtual teacher assistant. What are we learning today?',
-}
-
-const INSTRUCTION: Msg = {
-  role: 'model',
-  text: 'Hello, I am VirtuTA, your virtual teacher assistant. Press the Add File icon on the top right to upload documents or webpages. Press the Clipboard icon on the top left to see the current knowledge snippets. Ask me anything!',
 }
 
 // AKA must have context.
@@ -58,8 +58,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       // NOTE: make sure the try wraps everything...
       try {
         const res = await req
-        const raw = await res.text()
-        const data = JSON.parse(raw)
+        const data = await res.json()
 
         if (data.text) {
           setMsgs([...newMsgs, { role: 'model', text: data.text }])

@@ -1,4 +1,5 @@
 import { useChat } from '@/ChatContext'
+import { useUpload } from '@/UploadContext'
 import {
   IconArrowRotateRight,
   IconClipboardList,
@@ -118,7 +119,7 @@ function ChatEntry() {
       <textarea
         ref={inputRef}
         placeholder={isSending ? 'Processing...' : error ?? 'Type a message...'}
-        className='textarea textarea-ghost outline-none break-words overflow-hidden'
+        className='textarea textarea-ghost break-words overflow-hidden resize-none !outline-none !border-transparent'
         value={text}
         onChange={updateText}
         onKeyDown={handleEnter}
@@ -150,61 +151,88 @@ const UploadModal = forwardRef<HTMLDialogElement, ComponentProps<'dialog'>>(
     const [selected, setSelected] = useState<
       'pdf' | 'url' | 'wikipedia' | 'text'
     >('pdf')
+    const { uuid, uploadText } = useUpload()
+    const [text, setText] = useState('')
+
+    const onUpload = (text: string) => {
+      if (text === '') return
+      // TODO: popup saying uploading, followed by pop up that says done
+      // add like the first few words ellipses in the pop up so they know what
+      // was uploaded
+      uploadText(text)
+    }
+
     return (
       <dialog {...props} ref={ref} className='modal'>
         <div className='modal-box'>
           <h3 className='font-bold text-lg text-center'>Upload Document</h3>
-          <div role='tablist' className='tabs tabs-bordered'>
+          <p className='text-xs text-center text-gray-400'>
+            Dataset Id: {uuid}
+          </p>
+          <div
+            role='tablist'
+            className='tabs tabs-bordered justify-center grid-cols-4'
+          >
             <input
               type='radio'
               name='pdf'
               role='tab'
-              className='tab'
+              className='tab mb-4'
               aria-label='PDF'
               onClick={() => setSelected('pdf')}
               checked={selected === 'pdf'}
             />
-            <div role='tabpanel' className='tab-content p-10'>
-              Tab content 1
+            <div role='tabpanel' className='tab-content'>
+              <div className='w-full'></div>
             </div>
-
             <input
               type='radio'
               name='url'
               role='tab'
-              className='tab'
+              className='tab mb-4'
               aria-label='URL'
               onClick={() => setSelected('url')}
               checked={selected === 'url'}
             />
-            <div role='tabpanel' className='tab-content p-10'>
+            <div role='tabpanel' className='tab-content'>
               Tab content 2
             </div>
-
             <input
               type='radio'
               name='wikipedia'
               role='tab'
-              className='tab'
+              className='tab mb-4'
               aria-label='Wikipedia'
               onClick={() => setSelected('wikipedia')}
               checked={selected === 'wikipedia'}
             />
-            <div role='tabpanel' className='tab-content p-10'>
+            <div role='tabpanel' className='tab-content'>
               Tab content 3
             </div>
-
             <input
               type='radio'
               name='text'
               role='tab'
-              className='tab'
+              className='tab mb-4'
               aria-label='Text'
               onClick={() => setSelected('text')}
               checked={selected === 'text'}
             />
-            <div role='tabpanel' className='tab-content p-10'>
-              Tab content 3
+            <div role='tabpanel' className='tab-content'>
+              <div className='flex flex-col gap-4'>
+                <textarea
+                  className='textarea textarea-bordered resize-y'
+                  placeholder='Paste text here...'
+                  rows={10}
+                  onChange={(e) => setText(e.target.value)}
+                />
+                <button
+                  className='btn btn-sm btn-primary text-white'
+                  onClick={() => onUpload(text)}
+                >
+                  Upload
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -285,6 +313,7 @@ function Header() {
 export default function Home() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const { chunks } = useChat()
+  const { uuid } = useUpload()
   return (
     <DrawerContext.Provider value={[drawerOpen, setDrawerOpen]}>
       <div className='drawer'>
@@ -293,6 +322,9 @@ export default function Home() {
           className={`drawer-content fixed inset-0 flex flex-col h-[calc(100dvh)] w-[calc(100dvw)] overflow-hidden ${inter.className}`}
         >
           <Header />
+          <p className='text-xs text-gray-400 text-center'>
+            Dataset Id: {uuid}
+          </p>
           <ChatLog />
           <ChatEntry />
         </main>
@@ -304,6 +336,7 @@ export default function Home() {
           ></label>
           <ul className='menu p-4 w-80 min-h-full bg-base-200 text-base-content'>
             <h3 className='text-lg'>Referenced Snippets</h3>
+            <p className='text-xs'> Dataset Id: {uuid}</p>
             {chunks.map((s, i) => (
               <li
                 key={i}
